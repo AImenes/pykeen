@@ -449,7 +449,7 @@ class PipelineResult(Result):
         if save_training:
             self.training.to_path_binary(directory.joinpath(self.TRAINING_TRIPLES_FILE_NAME))
 
-        logger.info(f"Saved to directory: {directory.as_uri()}")
+        logger.info(f"Saved to directory: {directory.resolve()}")
 
     def save_to_ftp(self, directory: str, ftp: ftplib.FTP) -> None:
         """Save all artifacts to the given directory in the FTP server.
@@ -1068,6 +1068,11 @@ def _handle_training_loop(
 
     if negative_sampler is None:
         negative_sampler_cls = None
+        if negative_sampler_kwargs and issubclass(training_loop_cls, SLCWATrainingLoop):
+            training_loop_kwargs = dict(training_loop_kwargs)
+            training_loop_kwargs.update(
+                negative_sampler_kwargs=negative_sampler_kwargs,
+            )
     elif not issubclass(training_loop_cls, SLCWATrainingLoop):
         raise ValueError("Can not specify negative sampler with LCWA")
     else:
